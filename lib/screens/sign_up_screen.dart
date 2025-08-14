@@ -1,8 +1,8 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:maxpense/controllers/auth_controller.dart';
 import 'package:maxpense/screens/sign_in_screen.dart';
-import 'package:maxpense/services/auth_service.dart';
 import 'package:maxpense/screens/dashboard_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -15,12 +15,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final emailText = TextEditingController();
   final nameText = TextEditingController();
   final passText = TextEditingController();
-  final FirebaseAuth auth = FirebaseAuth.instance;
 
   bool _isLoading = false;
   bool _obscurePassword = true;
-
-  Future<void> registerUser() async {
+  
+  Future<void> _registerUser() async {
     final email = emailText.text.trim();
     final password = passText.text.trim();
     final name = nameText.text.trim();
@@ -35,36 +34,36 @@ class _SignUpScreenState extends State<SignUpScreen> {
     setState(() => _isLoading = true);
 
     try {
-      await auth.createUserWithEmailAndPassword(
+      final user = await AuthController.register(
+        name: name,
         email: email,
         password: password,
       );
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Account created successfully!')),
-      );
-
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => SigninScreen()),
-      );
-    } on FirebaseAuthException catch (e) {
-      String errorMessage;
-      if (e.code == 'email-already-in-use') {
-        errorMessage = 'This email is already registered.';
-      } else if (e.code == 'weak-password') {
-        errorMessage = 'Password should be at least 6 characters.';
-      } else if (e.code == 'invalid-email') {
-        errorMessage = 'Invalid email address.';
+      if (user != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Account created successfully!")),
+        );
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const DashboardScreen()),
+        );
       } else {
-        errorMessage = e.message ?? 'Something went wrong.';
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Registration failed — unknown reason")),
+        );
       }
+    } on FirebaseAuthException catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(errorMessage)),
+        SnackBar(content: Text("Auth Error: ${e.code} - ${e.message}")),
+      );
+    } on FirebaseException catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Firebase Error: ${e.code} - ${e.message}")),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString())),
+        SnackBar(content: Text("Unexpected Error: $e")),
       );
     } finally {
       setState(() => _isLoading = false);
@@ -74,174 +73,137 @@ class _SignUpScreenState extends State<SignUpScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
           child: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Back button
                 IconButton(
-                  icon: const Icon(Icons.arrow_back),
+                  icon: const Icon(Icons.arrow_back, size: 22),
                   onPressed: () => Navigator.pop(context),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 6),
 
-                // Title
                 const Text(
                   "Register",
                   style: TextStyle(
-                    fontSize: 28,
+                    fontSize: 24,
                     fontWeight: FontWeight.bold,
                     color: Color(0xFF575DFB),
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 3),
                 const Text(
                   "Create an account to access all the features of MaxPense!",
-                  style: TextStyle(fontSize: 14, color: Colors.black54),
+                  style: TextStyle(fontSize: 13, color: Colors.black54),
                 ),
-                const SizedBox(height: 30),
+                const SizedBox(height: 22),
 
-                // Name Field
-                const Text("Your Name", style: TextStyle(fontWeight: FontWeight.w500)),
-                const SizedBox(height: 6),
-                TextField(
+                _Label("Your Name"),
+                _TextField(
                   controller: nameText,
-                  decoration: InputDecoration(
-                    prefixIcon: const Icon(Icons.person_outline),
-                    hintText: 'Ex: John Doe',
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: const BorderSide(color: Color(0xFF575DFB), width: 1.5),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: const BorderSide(color: Color(0xFF575DFB), width: 1.5),
-                    ),
-                  ),
+                  icon: Icons.person_outline,
+                  hint: 'Ex: John Doe',
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 10),
 
-                // Email Field
-                const Text("Email", style: TextStyle(fontWeight: FontWeight.w500)),
-                const SizedBox(height: 6),
-                TextField(
+                _Label("Email"),
+                _TextField(
                   controller: emailText,
+                  icon: Icons.alternate_email,
+                  hint: 'Ex: abc@example.com',
                   keyboardType: TextInputType.emailAddress,
-                  decoration: InputDecoration(
-                    prefixIcon: const Icon(Icons.alternate_email),
-                    hintText: 'Ex: abc@example.com',
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: const BorderSide(color: Color(0xFF575DFB), width: 1.5),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: const BorderSide(color: Color(0xFF575DFB), width: 1.5),
-                    ),
-                  ),
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 10),
 
-                // Password Field
-                const Text("Password", style: TextStyle(fontWeight: FontWeight.w500)),
-                const SizedBox(height: 6),
-                TextField(
+                _Label("Password"),
+                _TextField(
                   controller: passText,
+                  icon: Icons.lock_outline,
+                  hint: '***********',
                   obscureText: _obscurePassword,
-                  decoration: InputDecoration(
-                    prefixIcon: const Icon(Icons.lock_outline),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscurePassword ? Icons.visibility_off : Icons.visibility,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          _obscurePassword = !_obscurePassword;
-                        });
-                      },
+                  suffix: IconButton(
+                    icon: Icon(
+                      _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                      size: 18,
                     ),
-                    hintText: '***********',
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: const BorderSide(color: Color(0xFF575DFB), width: 1.5),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: const BorderSide(color: Color(0xFF575DFB), width: 1.5),
-                    ),
+                    onPressed: () {
+                      setState(() {
+                        _obscurePassword = !_obscurePassword;
+                      });
+                    },
                   ),
                 ),
-                const SizedBox(height: 30),
+                const SizedBox(height: 22),
 
-                // Register Button
                 SizedBox(
                   width: double.infinity,
-                  height: 55,
+                  height: 48,
                   child: ElevatedButton(
-                    onPressed: _isLoading ? null : registerUser,
+                    onPressed: _isLoading ? null : _registerUser,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF575DFB),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(10),
                       ),
                     ),
                     child: _isLoading
-                        ? const CircularProgressIndicator(color: Colors.white)
+                        ? const CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
                         : const Text("Register",
-                            style: TextStyle(fontSize: 18, color: Colors.white)),
+                            style: TextStyle(fontSize: 16, color: Colors.white)),
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 16),
 
-                // Divider
                 Row(
                   children: [
-                    Expanded(child: Divider(color: Colors.grey[400])),
+                    Expanded(child: Divider(color: Colors.grey[400], thickness: 0.8)),
                     const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 8.0),
-                      child: Text("or"),
+                      padding: EdgeInsets.symmetric(horizontal: 6.0),
+                      child: Text("or", style: TextStyle(fontSize: 13)),
                     ),
-                    Expanded(child: Divider(color: Colors.grey[400])),
+                    Expanded(child: Divider(color: Colors.grey[400], thickness: 0.8)),
                   ],
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 16),
 
-                // Google Button
                 SizedBox(
                   width: double.infinity,
-                  height: 55,
+                  height: 48,
                   child: OutlinedButton.icon(
                     onPressed: () async {
-                    try {
-                      await AuthService.signInWithGoogle();
-                      Navigator.push(context, MaterialPageRoute(builder: (context)=>const DashboardScreen()));
-                    } catch (e) {
-                      print("Google Sign-In Error: $e");
-                    }
-                  },
-                    icon: Image.asset("assets/google-logo.jpg", height: 24),
+                      try {
+                        await AuthController.signInWithGoogle();
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const DashboardScreen()),
+                        );
+                      } catch (e) {
+                        print("Google Sign-In Error: $e");
+                      }
+                    },
+                    icon: Image.asset("assets/google-logo.jpg", height: 20),
                     label: const Text(
                       "Continue with Google",
-                      style: TextStyle(color: Colors.black87, fontSize: 16),
+                      style: TextStyle(color: Colors.black87, fontSize: 14),
                     ),
                     style: OutlinedButton.styleFrom(
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(10),
                       ),
-                      side: const BorderSide(color: Colors.black87),
+                      side: const BorderSide(color: Colors.black87, width: 1),
                     ),
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 16),
 
-                // Login
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text("Already have an account?"),
+                    const Text("Already have an account?", style: TextStyle(fontSize: 13)),
                     TextButton(
                       onPressed: () {
                         Navigator.push(
@@ -251,7 +213,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       },
                       child: const Text(
                         "Login",
-                        style: TextStyle(color: Color(0xFF575DFB)),
+                        style: TextStyle(color: Color(0xFF575DFB), fontSize: 13),
                       ),
                     ),
                   ],
@@ -259,6 +221,44 @@ class _SignUpScreenState extends State<SignUpScreen> {
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _Label(String text) {
+    return Text(
+      text,
+      style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 13),
+    );
+  }
+
+  Widget _TextField({
+    required TextEditingController controller,
+    required IconData icon,
+    required String hint,
+    TextInputType? keyboardType,
+    bool obscureText = false,
+    Widget? suffix,
+  }) {
+    return TextField(
+      controller: controller,
+      keyboardType: keyboardType,
+      obscureText: obscureText,
+      style: const TextStyle(fontSize: 14),
+      decoration: InputDecoration(
+        prefixIcon: Icon(icon, size: 18),
+        suffixIcon: suffix,
+        hintText: hint,
+        hintStyle: const TextStyle(fontSize: 13),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: Color(0xFF575DFB), width: 1),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: Color(0xFF575DFB), width: 1.2),
         ),
       ),
     );

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:maxpense/controllers/auth_controller.dart';
 import 'package:maxpense/screens/sign_up_screen.dart';
 import 'package:maxpense/screens/sign_in_screen.dart';
-import 'package:maxpense/services/auth_service.dart';
 import 'package:maxpense/screens/dashboard_screen.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -61,7 +61,7 @@ class HomeScreen extends StatelessWidget {
                   ),
                   onPressed: () async {
                     try {
-                      await AuthService.signInWithGoogle();
+                      await AuthController.signInWithGoogle();
                       Navigator.push(context, MaterialPageRoute(builder: (context)=>const DashboardScreen()));
                     } catch (e) {
                       print("Google Sign-In Error: $e");
