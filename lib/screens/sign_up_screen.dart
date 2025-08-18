@@ -18,7 +18,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   bool _isLoading = false;
   bool _obscurePassword = true;
-  
+
   Future<void> _registerUser() async {
     final email = emailText.text.trim();
     final password = passText.text.trim();
@@ -68,6 +68,44 @@ class _SignUpScreenState extends State<SignUpScreen> {
     } finally {
       setState(() => _isLoading = false);
     }
+  }
+
+  Widget _Label(String text) {
+    return Text(
+      text,
+      style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 13),
+    );
+  }
+
+  Widget _TextField({
+    required TextEditingController controller,
+    required IconData icon,
+    required String hint,
+    TextInputType? keyboardType,
+    bool obscureText = false,
+    Widget? suffix,
+  }) {
+    return TextField(
+      controller: controller,
+      keyboardType: keyboardType,
+      obscureText: obscureText,
+      style: const TextStyle(fontSize: 14),
+      decoration: InputDecoration(
+        prefixIcon: Icon(icon, size: 18),
+        suffixIcon: suffix,
+        hintText: hint,
+        hintStyle: const TextStyle(fontSize: 13),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: Color(0xFF575DFB), width: 1),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: Color(0xFF575DFB), width: 1.2),
+        ),
+      ),
+    );
   }
 
   @override
@@ -221,44 +259,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
               ],
             ),
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _Label(String text) {
-    return Text(
-      text,
-      style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 13),
-    );
-  }
-
-  Widget _TextField({
-    required TextEditingController controller,
-    required IconData icon,
-    required String hint,
-    TextInputType? keyboardType,
-    bool obscureText = false,
-    Widget? suffix,
-  }) {
-    return TextField(
-      controller: controller,
-      keyboardType: keyboardType,
-      obscureText: obscureText,
-      style: const TextStyle(fontSize: 14),
-      decoration: InputDecoration(
-        prefixIcon: Icon(icon, size: 18),
-        suffixIcon: suffix,
-        hintText: hint,
-        hintStyle: const TextStyle(fontSize: 13),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: Color(0xFF575DFB), width: 1),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: Color(0xFF575DFB), width: 1.2),
         ),
       ),
     );

@@ -14,8 +14,8 @@ class _SigninScreenState extends State<SigninScreen> {
   final emailController = TextEditingController();
   final passController = TextEditingController();
 
-  bool _obscurePassword = true;
   bool _isLoading = false;
+  bool _obscurePassword = true;
 
   Future<void> _loginUser() async {
     final email = emailController.text.trim();
@@ -53,6 +53,44 @@ class _SigninScreenState extends State<SigninScreen> {
     } finally {
       setState(() => _isLoading = false);
     }
+  }
+
+  Widget _Label(String text) {
+    return Text(
+      text,
+      style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 13),
+    );
+  }
+
+  Widget _TextField({
+    required TextEditingController controller,
+    required IconData icon,
+    required String hint,
+    TextInputType? keyboardType,
+    bool obscureText = false,
+    Widget? suffix,
+  }) {
+    return TextField(
+      controller: controller,
+      keyboardType: keyboardType,
+      obscureText: obscureText,
+      style: const TextStyle(fontSize: 14),
+      decoration: InputDecoration(
+        prefixIcon: Icon(icon, size: 18),
+        suffixIcon: suffix,
+        hintText: hint,
+        hintStyle: const TextStyle(fontSize: 13),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: Color(0xFF575DFB), width: 1),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: Color(0xFF575DFB), width: 1.2),
+        ),
+      ),
+    );
   }
 
   @override
@@ -211,44 +249,6 @@ class _SigninScreenState extends State<SigninScreen> {
               ],
             ),
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _Label(String text) {
-    return Text(
-      text,
-      style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 13),
-    );
-  }
-
-  Widget _TextField({
-    required TextEditingController controller,
-    required IconData icon,
-    required String hint,
-    TextInputType? keyboardType,
-    bool obscureText = false,
-    Widget? suffix,
-  }) {
-    return TextField(
-      controller: controller,
-      keyboardType: keyboardType,
-      obscureText: obscureText,
-      style: const TextStyle(fontSize: 14),
-      decoration: InputDecoration(
-        prefixIcon: Icon(icon, size: 18),
-        suffixIcon: suffix,
-        hintText: hint,
-        hintStyle: const TextStyle(fontSize: 13),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: Color(0xFF575DFB), width: 1),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: Color(0xFF575DFB), width: 1.2),
         ),
       ),
     );
