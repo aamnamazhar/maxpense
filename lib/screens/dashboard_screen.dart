@@ -5,6 +5,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:maxpense/controllers/auth_controller.dart';
 import 'package:maxpense/services/location_service.dart';
 import 'package:maxpense/services/weather_service.dart';
+import 'package:maxpense/screens/notes_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -105,123 +106,137 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final user = FirebaseAuth.instance.currentUser;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F6FA),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+  backgroundColor: const Color(0xFFF5F6FA),
+  body: SafeArea(
+    child: Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              /// Back Button
               IconButton(
-                icon: const Icon(Icons.arrow_back_ios, size: 20, color: Colors.black87),
+                icon: const Icon(Icons.arrow_back_ios, size: 20, color: Color(0xFF575DFB)),
                 onPressed: () => Navigator.pop(context),
               ),
-
-              const SizedBox(height: 20),
-
-              /// Welcome Card
-              _glossyCard(
-                child: Row(
-                  children: [
-                    const CircleAvatar(
-                      radius: 28,
-                      backgroundColor: Color.fromARGB(186, 255, 255, 255),
-                      child: Icon(Icons.person,
-                          size: 30, color: Color.fromARGB(171, 87, 93, 251)),
-                    ),
-                    const SizedBox(width: 16),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          "Welcome back,",
-                          style: TextStyle(fontSize: 18, color: Colors.white),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          user?.displayName ?? "No Name",
-                          style: const TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+              IconButton(
+                icon: const Icon(Icons.power_settings_new_rounded, size: 24, color: Color(0xFF575DFB)),
+                onPressed: () async {
+                  await AuthController.logout();
+                  if (context.mounted) Navigator.pop(context);
+                },
               ),
+            ],
+          ),
 
-              const SizedBox(height: 20),
+          const SizedBox(height: 20),
 
-              /// Weather Card
-              _glossyCard(
-                child: Row(
+          /// Welcome Card
+          _glossyCard(
+            child: Row(
+              children: [
+                const CircleAvatar(
+                  radius: 28,
+                  backgroundColor: Color.fromARGB(186, 255, 255, 255),
+                  child: Icon(Icons.person,
+                      size: 30, color: Color.fromARGB(171, 87, 93, 251)),
+                ),
+                const SizedBox(width: 16),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(
-                      _getWeatherIcon(weatherCondition),
-                      color: Colors.white,
-                      size: 40,
+                    const Text(
+                      "Welcome back 👋,",
+                      style: TextStyle(fontSize: 18, color: Colors.white),
                     ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            address ?? "📍 Fetching location...",
-                            style: const TextStyle(fontSize: 16, color: Colors.white),
-                          ),
-                          const SizedBox(height: 10),
-                          Text(
-                            (temperature != null && weatherCondition != null)
-                                ? "$temperature°C, $weatherCondition"
-                                : "Fetching weather...",
-                            style: const TextStyle(
-                              fontSize: 16,
-                              color: Colors.white,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
+                    const SizedBox(height: 6),
+                    Text(
+                      user?.displayName ?? "No Name",
+                      style: const TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
                       ),
                     ),
                   ],
                 ),
-              ),
-
-
-              const Spacer(),
-
-              /// Logout Button
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton.icon(
-                  icon: const Icon(Icons.logout, color: Colors.white, size: 20),
-                  label: const Text(
-                    "Logout",
-                    style: TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF575DFB),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  onPressed: () async {
-                    await AuthController.logout();
-                    Navigator.pop(context);
-                  },
-                ),
-              ),
-              const SizedBox(height: 12),
-            ],
+              ],
+            ),
           ),
-        ),
+
+          const SizedBox(height: 20),
+
+          /// Weather Card
+          _glossyCard(
+            child: Row(
+              children: [
+                Icon(
+                  _getWeatherIcon(weatherCondition),
+                  color: Colors.white,
+                  size: 40,
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Todays Weather",
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        address ?? "Current Location...",
+                        style: const TextStyle(fontSize: 16, color: Colors.white),
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        (temperature != null && weatherCondition != null)
+                            ? "$temperature°C, $weatherCondition"
+                            : "Loading weather...",
+                        style: const TextStyle(
+                          fontSize: 16,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Spacer(),
+        ],
       ),
-    );
+    ),
+  ),
+  floatingActionButton: FloatingActionButton.extended(
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(14),
+    ),
+    elevation: 6,
+    backgroundColor: Colors.white,
+    icon: const Icon(Icons.add_comment_rounded, color: Color(0xFF575DFB)),
+    label: const Text(
+      "Notes",
+      style: TextStyle(
+        color: Color(0xFF575DFB),
+        fontWeight: FontWeight.w600,
+      ),
+    ),
+    onPressed: () => Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const NotesScreen()),
+    ),
+  ),
+  floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+);
+
   }
 }
