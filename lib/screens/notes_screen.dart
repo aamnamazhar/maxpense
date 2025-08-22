@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:maxpense/models/note.dart';
 import 'package:maxpense/services/notes_db.dart';
+import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 
 class NotesScreen extends StatefulWidget {
   const NotesScreen({super.key});
@@ -12,9 +13,15 @@ class NotesScreen extends StatefulWidget {
 }
 
 class _NotesScreenState extends State<NotesScreen> {
-  final searchCtrl = TextEditingController();
   List<Note> notes = [];
+  final searchCtrl = TextEditingController();
   late String userId;
+
+  @override
+  void dispose() {
+    searchCtrl.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -22,12 +29,6 @@ class _NotesScreenState extends State<NotesScreen> {
     final user = FirebaseAuth.instance.currentUser;
     userId = user?.uid ?? "guest";
     _loadNotes();
-  }
-
-  @override
-  void dispose() {
-    searchCtrl.dispose();
-    super.dispose();
   }
 
   Future<void> _loadNotes() async {
@@ -280,25 +281,50 @@ class _NotesScreenState extends State<NotesScreen> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showNoteDialog(),
+      
+      floatingActionButton: SpeedDial(
+        icon: Icons.add,
+        activeIcon: Icons.close,
         backgroundColor: Colors.white,
-        elevation: 6,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(14),
-        ),
-        icon: const Icon(
-          Icons.add_comment_rounded,
-          color: Color(0xFF575DFB),
-        ),
-        label: const Text(
-          "New Note",
-          style: TextStyle(
-            color: Color(0xFF575DFB),
-            fontWeight: FontWeight.w600,
+        foregroundColor: const Color(0xFF575DFB),
+        overlayColor: Colors.black,
+        overlayOpacity: 0.3,
+        spacing: 12,
+        spaceBetweenChildren: 8,
+        children: [
+          SpeedDialChild(
+            child: const Icon(Icons.note_add, color: Color(0xFF575DFB)),
+            label: "New Note",
+            onTap: () => _showNoteDialog(),
           ),
-        ),
+          SpeedDialChild(
+            child: const Icon(Icons.cloud_upload, color: Color(0xFF575DFB)),
+            label: "Backup Notes",
+            onTap: () async {
+              await NotesDatabase.instance.backupNotes(notes);
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Notes backed up successfully!")),
+                );
+              }
+            },
+          ),
+          SpeedDialChild(
+            child: const Icon(Icons.cloud_download, color: Color(0xFF575DFB)),
+            label: "Restore Notes",
+            onTap: () async {
+              await NotesDatabase.instance.restoreNotes();
+              await _loadNotes();
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Notes restored successfully!")),
+                );
+              }
+            },
+          ),
+        ],
       ),
+
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
